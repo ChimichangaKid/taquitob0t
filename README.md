@@ -1,9 +1,9 @@
 # Taquitobot
 
 GitHub codebase for a personal discord bot to play music hosted on repl.it.
-The bot can be found at the following [repl](https://replit.com/@taquitofan/taquitobotupdated#taquitobot/main.py)
 
-### Version 1.0.0
+##### Version 1.0.0 
+##### Last updated 2023-04-30
 
 ### Commands
 Commands are followed by a "$" prefix
