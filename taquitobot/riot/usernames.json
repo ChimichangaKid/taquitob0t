@@ -1,0 +1,17 @@
+{
+    "users": [
+        {
+            "discord": 123,
+            "riot": [
+                "test"
+            ]
+        },
+        {
+            "discord": 456,
+            "riot": [
+                "test1",
+                "test2"
+            ]
+        }
+    ]
+}
