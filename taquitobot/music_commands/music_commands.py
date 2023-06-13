@@ -171,9 +171,8 @@ class MusicPlayer(commands.Cog):
         if ctx.voice_client:
             self.title_list.clear()
             self.song_queue.clear()
-
-            await ctx.guild.voice_client.disconnect()
             await ctx.send(f"Disconnected from {ctx.voice_client}.")
+            await ctx.guild.voice_client.disconnect()
         else:
             await ctx.send("Not in a voice channel...")
 
@@ -225,6 +224,18 @@ class MusicPlayer(commands.Cog):
 
         await ctx.send("**" + queue + "**")
 
+    @commands.command(name="remove", aliases=['r', 'R'])
+    async def remove(self, ctx):
+        """
+        """
+        index = ctx.message.content
+        song_index = int(index.split(None, 1)[1]) - 1
+        if song_index > -1 and song_index < len(self.song_queue):
+            self.song_queue.pop(song_index)
+            title = self.title_list.pop(song_index)
+            await ctx.send("Removed: **" + str(song_index + 1) + '. ' + title + '**')
+        else:
+            await ctx.send("Invalid input brainless idjit")
 
 async def setup(bot):
     await bot.add_cog(MusicPlayer(bot))
