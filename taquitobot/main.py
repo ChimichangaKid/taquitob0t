@@ -17,10 +17,12 @@
 # =============================================================================
 import os
 import asyncio
+import re
 import nest_asyncio
 import discord
 import my_flask
 from discord.ext import commands
+from clip_commands.clip_downloader.clip_downloader import download_video, extract_video_link
 
 # =============================================================================
 #
@@ -30,8 +32,10 @@ from discord.ext import commands
 nest_asyncio.apply()
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix='$', intents=intents)
+outplayed_pattern = r"https://outplayed\.tv/media/.*"
 
-#bot.add_cog(RiotCommands(bot))
+
+# bot.add_cog(RiotCommands(bot))
 
 # =============================================================================
 #
@@ -58,7 +62,21 @@ async def on_message(message):
     if message.author == bot.user:
         return None
 
-    content = message.content
+    content = message.content.lower()
+
+    if re.search(outplayed_pattern, content):
+        # Get the outplayed link from the message
+        try:
+            outplayed_link = re.search(outplayed_pattern, content).group()
+        except:
+            print("Error has occurred in finding link")
+
+        # Get vido title from rest of message
+        video_title = re.sub(outplayed_pattern, "", content)
+
+        # Get the video link and download the video
+        video_link = extract_video_link(outplayed_link)
+        download_video(video_link)
 
 
 # =============================================================================
@@ -73,6 +91,7 @@ async def load():
     Source: https://www.youtube.com/watch?v=hxsGrMijgUA
     """
     await bot.load_extension("music_commands.music_commands")
+    await bot.load_extension("riot.riot_requests")
 
 
 async def main():
