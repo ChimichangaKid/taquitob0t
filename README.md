@@ -2,10 +2,10 @@
 
 GitHub codebase for a personal discord bot to play music hosted on repl.it.
 
-##### Version 1.1.0 
-##### Last updated 2023-06-06
+##### Version 1.1.1 
+##### Last updated 2023-06-14
 
-### Commands
+## Commands
 Commands are followed by a "$" prefix
 
 
@@ -34,3 +34,8 @@ Command to request if a champion mastery chest is available in League of Legends
 
 #### OPGG (aliases 'op') Args: username(s)
 Command that will generate an opgg link for the specified usernames. Takes any amount of usernames separated by spaces. 
+
+## Additional Features
+
+### Clip Capturing
+The bot will automatically recognize clips from outplayed.tv and download them to the environment 
