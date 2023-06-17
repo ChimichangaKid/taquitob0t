@@ -38,4 +38,4 @@ Command that will generate an opgg link for the specified usernames. Takes any a
 ## Additional Features
 
 ### Clip Capturing
-The bot will automatically recognize clips from outplayed.tv and download them to the environment 
+The bot will automatically recognize clips from outplayed.tv and edit them + download them to the environment 
