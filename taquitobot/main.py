@@ -22,7 +22,7 @@ import nest_asyncio
 import discord
 import my_flask
 from discord.ext import commands
-from clip_commands.clip_downloader.clip_downloader import download_video, extract_video_link
+from clip_commands.clip_editor.clip_editor import ClipEditor
 
 # =============================================================================
 #
@@ -64,19 +64,11 @@ async def on_message(message):
 
     content = message.content.lower()
 
-    if re.search(outplayed_pattern, content):
-        # Get the outplayed link from the message
-        try:
-            outplayed_link = re.search(outplayed_pattern, content).group()
-        except:
-            print("Error has occurred in finding link")
-
-        # Get vido title from rest of message
-        video_title = re.sub(outplayed_pattern, "", content)
-
-        # Get the video link and download the video
-        video_link = extract_video_link(outplayed_link)
-        download_video(video_link)
+    if re.search(outplayed_pattern, content, re.IGNORECASE):
+        clip_editor = ClipEditor(content)
+        await clip_editor.add_audio()
+        clip_editor.save_video()
+        print(clip_editor.video_title)
 
 
 # =============================================================================
