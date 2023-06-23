@@ -83,7 +83,6 @@ def download_outplayed_clip_from_discord_message(discord_message):
         outplayed_url = re.search(OUTPLAYED_PATTERN, discord_message).group()
     except:
         print("Error has occurred in finding link")
-        return None
 
     video_file = download_video(extract_video_link(outplayed_url))
 
