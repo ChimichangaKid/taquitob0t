@@ -62,9 +62,11 @@ class RiotCommands(commands.Cog):
         Command to request if a champion mastery chest is available in League of Legends by Riot Games.
 
         :param ctx: A discord.Context object, represents the context of the command being issued.
-        :param username: A string representation of the username of the player. Should be a valid league of legends username.
+        :param username: A string representation of the username of the player. Should be a valid league of legends
+        username.
         :param champion: A string representation of the champion name in question
-        :param region: A string representation of the region name of the player in question. Defaults to na (North America). See https://leagueoflegends.fandom.com/wiki/Servers for details on valid prefixes.
+        :param region: A string representation of the region name of the player in question. Defaults to na
+        (North America). See https://leagueoflegends.fandom.com/wiki/Servers for details on valid prefixes.
         """
         # Properly format variables
         champion_name = champion.title()
@@ -94,9 +96,10 @@ class RiotCommands(commands.Cog):
 
     @commands.command(name="register-user", aliases=['ru', 'Ru', 'add-user', 'au', 'Au'])
     async def register_user(self, ctx, *, username):
-        #TODO: Implement code that uses this command
+        # TODO: Implement code that uses this command
         """
-        Command to register the user in the database to make the chest command faster, links the discord id with riot account in the bot via json file.
+        Command to register the user in the database to make the chest command faster, links the discord id with riot
+        account in the bot via json file.
         :param ctx: A discord.Context object, represents the context of the command being issued.
         :param username: The username to be linked to this discord id, should be a string.
         """
@@ -133,7 +136,8 @@ class RiotCommands(commands.Cog):
         """
         Searches the op.gg profile of the specified user(s)
 
-        :param args: The name(s) of the players to be searched for as strings
+        :param ctx: A discord.Context object, represents the context of the command being issued.
+        :param username: The name(s) of the players to be searched for as strings
         """
         name_list = username.split(" ")
 

@@ -17,10 +17,12 @@
 # =============================================================================
 import os
 import asyncio
+import re
 import nest_asyncio
 import discord
 import my_flask
 from discord.ext import commands
+from clip_commands.clip_editor.clip_editor import ClipEditor
 
 # =============================================================================
 #
@@ -30,8 +32,10 @@ from discord.ext import commands
 nest_asyncio.apply()
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix='$', intents=intents)
+outplayed_pattern = r"https://outplayed\.tv/media/.*"
 
-#bot.add_cog(RiotCommands(bot))
+
+# bot.add_cog(RiotCommands(bot))
 
 # =============================================================================
 #
@@ -58,7 +62,13 @@ async def on_message(message):
     if message.author == bot.user:
         return None
 
-    content = message.content
+    content = message.content.lower()
+
+    if re.search(outplayed_pattern, content, re.IGNORECASE):
+        clip_editor = ClipEditor(content)
+        await clip_editor.add_audio()
+        clip_editor.save_video()
+        print(clip_editor.video_title)
 
 
 # =============================================================================
@@ -73,6 +83,7 @@ async def load():
     Source: https://www.youtube.com/watch?v=hxsGrMijgUA
     """
     await bot.load_extension("music_commands.music_commands")
+    await bot.load_extension("riot.riot_requests")
 
 
 async def main():

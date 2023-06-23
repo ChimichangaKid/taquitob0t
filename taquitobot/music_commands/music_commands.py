@@ -158,7 +158,7 @@ class MusicPlayer(commands.Cog):
             await ctx.send("Error fetching song from YouTube.")
             return None
 
-        if self.is_playing == False:
+        if not self.is_playing:
             self.play_next_song(ctx)
 
     @commands.command(name="leave", aliases=["disconnect", 'l', 'L'])
@@ -230,12 +230,13 @@ class MusicPlayer(commands.Cog):
         """
         index = ctx.message.content
         song_index = int(index.split(None, 1)[1]) - 1
-        if song_index > -1 and song_index < len(self.song_queue):
+        if -1 < song_index < len(self.song_queue):
             self.song_queue.pop(song_index)
             title = self.title_list.pop(song_index)
             await ctx.send("Removed: **" + str(song_index + 1) + '. ' + title + '**')
         else:
             await ctx.send("Invalid input brainless idjit")
+
 
 async def setup(bot):
     await bot.add_cog(MusicPlayer(bot))
