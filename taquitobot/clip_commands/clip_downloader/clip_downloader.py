@@ -27,7 +27,6 @@ from bs4 import BeautifulSoup
 
 OUTPLAYED_PATTERN = r"https://outplayed\.tv/media/.*"
 
-
 # =============================================================================
 #
 #                                   Functions
@@ -42,17 +41,16 @@ def download_video(video_link):
     :return: video_file: The filename of the video that was downloaded.
     """
     # Gets the end of the url (only the mp4 part
-    video_file = os.path.basename(video_link)
+    video_file = os.path.basename(video_link) 
 
-    r = requests.get(video_link)
-
-    with open(video_file, 'wb') as f:
-        for chunk in r.iter_content(chunk_size=1024 * 1024):
-            if chunk:
-                f.write(chunk)
+    r = requests.get(video_link) 
+    
+    with open(video_file, 'wb') as f: 
+        for chunk in r.iter_content(chunk_size = 1024*1024): 
+            if chunk: 
+                f.write(chunk) 
 
     return video_file
-
 
 def extract_video_link(url):
     """
@@ -66,9 +64,8 @@ def extract_video_link(url):
     soup = BeautifulSoup(html, 'html.parser')
     video_tag = soup.find('video')
     mp4_link = video_tag['src']
-
+    
     return mp4_link
-
 
 def download_outplayed_clip_from_discord_message(discord_message):
     """
@@ -77,16 +74,16 @@ def download_outplayed_clip_from_discord_message(discord_message):
     :param: discord_message: The discord message as string containing the outplayed.tv link.
     :return: video_file: The videofile title that was downloaded at the root of the repository.
     :return: video_title: The rest of the discord message to be used as a title.
-    """
+    """  
     # Get the outplayed link from the message
     try:
         outplayed_url = re.search(OUTPLAYED_PATTERN, discord_message).group()
     except:
         print("Error has occurred in finding link")
-
+    
     video_file = download_video(extract_video_link(outplayed_url))
-
+    
     # Get vido title from rest of message
-    video_title = re.sub(OUTPLAYED_PATTERN, "", discord_message, re.IGNORECASE)
+    video_title = re.sub(OUTPLAYED_PATTERN, "", discord_message, re.IGNORECASE).replace('\n', '')
 
     return video_file, video_title

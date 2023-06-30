@@ -19,7 +19,7 @@ import os
 import numpy as np
 import random
 import re
-# IMPORTANT TO IMPORT TENSORFLOW 2.9.3 ON REPLIT FREE, OTHERWISE THERE IS NOT ENOUGH SPACE
+import json
 from tensorflow.keras.models import load_model
 from clip_commands.clip_downloader.clip_downloader import download_outplayed_clip_from_discord_message
 
@@ -39,7 +39,7 @@ MP4_CODEC = "libx264"
 CLIP_EDITOR_MODEL = load_model(
     'taquitobot/clip_commands/clip_editor/neural_networks/taquitobot_clip_editor_crop2_NN.h5',
     compile=False)
-
+JSON_FILE_PATH = 'taquitobot/clip_commands/clip_editor/clip_data.json'
 
 # =============================================================================
 #
@@ -57,7 +57,9 @@ class ClipEditor:
         """
         self.video_file, self.video_title = download_outplayed_clip_from_discord_message(
             discord_message)
-        self.audio_track, self.audio_drop = get_random_audio_from_folder(SONG_FOLDER_PATH)
+
+        self.audio_track, self.audio_drop = get_random_audio_from_folder(
+            SONG_FOLDER_PATH)
 
         # Generate moviepy video/audio clips objects
         self.audio_clip = moviepy.editor.AudioFileClip(SONG_FOLDER_PATH +
@@ -65,34 +67,56 @@ class ClipEditor:
         self.video_clip = moviepy.editor.VideoFileClip(self.video_file)
         self.length_of_clip = self.video_clip.duration
 
+        # Get previous clip information
+        with open(JSON_FILE_PATH, 'r') as clip_data:
+            self.clip_data_from_file = json.load(clip_data)
+
     async def add_audio(self):
         """
-        Function to add a random audio track to the clip.
+        Function to add a random audio track to the clip and edit the video into a youtube short.
         """
         audio_start = self.audio_drop - await self.find_first_highlight()
 
         audio_subclip = self.audio_clip.subclip(
             audio_start, int(self.length_of_clip + audio_start))
 
-        self.edited_video = self.video_clip.set_audio(audio_subclip)
-
+        self.edited_video = self.video_clip.set_audio(audio_subclip)\
+        
+        # Convert the video to 16:9 aspect ratio (vertical)
+        self.edited_video = self.edited_video.resize(height=960)
+        centre = int(self.edited_video.w / 2)
+        self.edited_video = self.edited_video.crop(x1=centre - 270, y1=0, x2=centre + 270, y2=960)
+        
+        # Remove the last 20% of the video (usually irrelevant)
+        clip_duration = self.edited_video.duration 
+        self.edited_video = self.edited_video.subclip(0, clip_duration)
         return None
 
     def save_video(self):
         """
         Function to save an edited video to the environment.
+        :return: The video title and the path to the video.
         """
         try:
-            self.edited_video.write_videofile(self.video_title + 'edited.mp4',
+            self.new_filename = self.video_title + ' valorant.mp4'
+            self.edited_video.write_videofile(self.new_filename,
                                               fps=30,
                                               codec=MP4_CODEC,
                                               preset='superfast')
+
+            with open(JSON_FILE_PATH, 'w') as clip_data:
+                # Add the new video to completed videos
+                self.clip_data_from_file["edited_videos"].append(
+                    self.video_file)
+                json.dump(self.clip_data_from_file, clip_data)
+
+            self.delete_original_footage()
         except (NameError):
             print(
                 'Video has not been edited yet, cannot save video that does not exist.'
             )
 
-        return None
+        return self.new_filename
 
     async def find_first_highlight(self):
         """
@@ -101,11 +125,10 @@ class ClipEditor:
         """
         # This will loop to the length of the video in increments of 0.5
         for time_interval in [
-            float(j) / 4 for j in range(0, 4 * int(self.length_of_clip), 1)
+                float(j) / 4 for j in range(0, 4 * int(self.length_of_clip), 1)
         ]:
-            # resize video
-            # resized_clip = self.video_clip.resize(height=135, width=240)
-            resized_clip = self.video_clip.crop(CROP_LEFT, CROP_TOP, CROP_RIGHT, CROP_BOTTOM)
+            resized_clip = self.video_clip.crop(CROP_LEFT, CROP_TOP,
+                                                CROP_RIGHT, CROP_BOTTOM)
 
             current_frame = resized_clip.get_frame(time_interval) / 255
             # Need to add one more dimension for the NN to take as input
@@ -117,6 +140,27 @@ class ClipEditor:
             if np.argmax(prediction) == 1:
                 return time_interval
         return self.length_of_clip / 2
+
+    def check_duplicate_video(self):
+        """
+        Function to check if the video has already been uploaded to prevent duplicates.
+        :return: True if the video has been uploaded and False if this is the first occurance.
+        """
+
+        video_uploaded = False
+        if self.video_file in self.clip_data_from_file["edited_videos"]:
+            video_uploaded = True
+
+        return video_uploaded
+    
+    def delete_original_footage(self):
+        """
+        Function to remove the original clip once video editing has finished.
+        """
+        print(f'video file is {self.video_file}')
+        if os.path.exists(self.video_file):
+            os.remove(self.video_file)
+            print(f'Deleted {self.video_file}')
 
 
 # =============================================================================
@@ -133,9 +177,9 @@ def get_random_audio_from_folder(path):
     :returns: The title of the file that was chosen.
     """
 
+    # Get a unique song that was not used in the most recent edit
     song_path = random.choice(os.listdir(path))
-
-    # Regex gets the first digits of the filename which contain the song beat drop timing
-    song_start_time = int(re.match(r'^(\d+)', song_path).group(1))
+    song_start_time = float(
+        re.search(r'(\d+\$\d+)', song_path).group(1).replace('$', '.'))
 
     return song_path, song_start_time
