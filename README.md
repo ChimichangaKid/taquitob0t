@@ -2,8 +2,8 @@
 
 GitHub codebase for a personal discord bot to play music hosted on repl.it.
 
-##### Version 1.1.1 
-##### Last updated 2023-06-14
+##### Version 1.2.0 
+##### Last updated 2023-06-29
 
 ## Commands
 Commands are followed by a "$" prefix
@@ -38,4 +38,4 @@ Command that will generate an opgg link for the specified usernames. Takes any a
 ## Additional Features
 
 ### Clip Capturing
-The bot will automatically recognize clips from outplayed.tv and edit them + download them to the environment 
+The bot will automatically recognize clips from outplayed.tv and edit them. The editing consists of converting to 16:9 aspect ratio and adding audio synced to the highlight of the clip. The program will then upload videos to the YouTube account that is currently logged in.
