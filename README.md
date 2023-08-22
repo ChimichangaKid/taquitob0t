@@ -2,8 +2,8 @@
 
 GitHub codebase for a personal discord bot to play music hosted on repl.it.
 
-##### Version 1.2.0 
-##### Last updated 2023-06-29
+##### Version 1.2.1 
+##### Last updated 2023-08-22
 
 ## Commands
 Commands are followed by a "$" prefix

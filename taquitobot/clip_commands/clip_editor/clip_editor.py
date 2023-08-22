@@ -66,6 +66,25 @@ class ClipEditor:
                                                        self.audio_track)
         self.video_clip = moviepy.editor.VideoFileClip(self.video_file)
         self.length_of_clip = self.video_clip.duration
+        self.length_of_song = self.audio_clip.duration
+
+        # Ensure that the song is long enough for the clip
+        if self.length_of_song < self.length_of_clip:
+            counter = 0
+            while self.length_of_song < self.length_of_clip:
+                self.audio_track, self.audio_drop = get_random_audio_from_folder(
+            SONG_FOLDER_PATH)
+                self.audio_clip = moviepy.editor.AudioFileClip(SONG_FOLDER_PATH +
+                                                               self.audio_track)
+                self.length_of_song = self.audio_clip.duration
+                counter = counter + 1
+                # if we try too many times abort getting song
+                if counter == 100:
+                    break
+
+        # Generate moviepy video/audio clips objects
+        self.audio_clip = moviepy.editor.AudioFileClip(SONG_FOLDER_PATH +
+                                                       self.audio_track)
 
         # Get previous clip information
         with open(JSON_FILE_PATH, 'r') as clip_data:

@@ -18,6 +18,10 @@ import time
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.service import Service as ChromiumService
+from webdriver_manager.chrome import ChromeDriverManager
+from webdriver_manager.core.os_manager import ChromeType
+
 
 # =============================================================================
 #
@@ -45,7 +49,7 @@ Valorant Lineups Valorant Fast Plant Valorant Strategy Valorant Map Valorant Age
 class YouTubeUploader:
 
     def __init__(self, video_path, video_title):
-        self.driver = webdriver.Chrome(options=chrome_options)
+        self.driver = webdriver.Chrome(service=ChromiumService(ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install()), options=chrome_options)
         self.video_path = video_path
         self.video_title = video_title + ' #valorant #outplay'
 
