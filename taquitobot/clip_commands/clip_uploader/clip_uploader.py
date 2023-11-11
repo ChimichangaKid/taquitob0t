@@ -29,17 +29,18 @@ from webdriver_manager.core.os_manager import ChromeType
 #
 # =============================================================================
 current_dir = os.getcwd()
+FILE_PATH = os.path.abspath(__file__)
+FOLDER_PATH = os.path.dirname(FILE_PATH)
+DATA_RELATIVE_PATH = "selenium"
+DATA_PATH = os.path.join(FOLDER_PATH, DATA_RELATIVE_PATH)
+
 chrome_options = Options()
-# chrome_options.add_experimental_option("detach", True) This will keep the tab open for debugging
-chrome_options.add_argument("user-data-dir=taquitob0t/taquitobot/clip_commands/clip_uploader/selenium") 
+# chrome_options.add_experimental_option("detach", True) # This will keep the tab open for debugging
+chrome_options.add_argument(f"user-data-dir={DATA_PATH}") 
 chrome_options.add_argument('--no-sandbox')
 chrome_options.add_argument('--disable-dev-shm-usage')
 
-DESCRIPTION_TEMPLATE = """
-Valorant Gameplay Valorant highlights Valorant Clips Valorant Plays Valorant Montage Valorant Shorts,
-Valorant Duelist Valorant Clutches Valorant Masters Valorant AI Valorant Phoenix Valorant Jett Valorant Yoru
-Valorant Lineups Valorant Fast Plant Valorant Strategy Valorant Map Valorant Agent Valorant Rework
-"""
+
 
 # =============================================================================
 #
@@ -48,10 +49,18 @@ Valorant Lineups Valorant Fast Plant Valorant Strategy Valorant Map Valorant Age
 # =============================================================================
 class YouTubeUploader:
 
-    def __init__(self, video_path, video_title):
+    def __init__(self, video_path, video_title, game_title):
         self.driver = webdriver.Chrome(service=ChromiumService(ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install()), options=chrome_options)
         self.video_path = video_path
-        self.video_title = video_title + ' #valorant #outplay'
+        self.game_title = game_title
+        self.video_title = video_title + f' #{game_title} #outplay #{game_title}Clip #{game_title}Guides'
+        self.DESCRIPTION_TEMPLATE = f"""
+{game_title} Gameplay {game_title} highlights {game_title} Clips {game_title} Plays {game_title} Montage {game_title} Shorts,
+{game_title} Duelist {game_title} Clutches {game_title} Masters {game_title} AI {game_title} Phoenix {game_title} Jett {game_title} Yoru
+{game_title} Lineups {game_title} Fast Plant {game_title} Strategy {game_title} Map {game_title} Agent {game_title} Rework {game_title} Streamer
+{game_title} Goat {game_title} Sentinels {game_title} Duelists {game_title} Speedrun {game_title} Champions {game_title} Best Moments 
+{game_title} High Elo {game_title} Aim {game_title} Vandal Mr Big Meteors DigDaddyDavid {game_title} Cracked
+"""
 
     def upload_video_to_YT(self):
         """
@@ -93,7 +102,7 @@ class YouTubeUploader:
         time.sleep(3)
         description_box = self.driver.find_element(By.XPATH, '//div[@aria-label="Tell viewers about your video (type @ to mention a channel)"]')
         description_box.clear()
-        description_box.send_keys(DESCRIPTION_TEMPLATE)
+        description_box.send_keys(self.DESCRIPTION_TEMPLATE)
 
         time.sleep(3)
         # Click the 'not made for kids button'
@@ -120,7 +129,7 @@ class YouTubeUploader:
         print('making video public')
         public_button = self.driver.find_element(By.XPATH, '//tp-yt-paper-radio-button[@name="PUBLIC"]')
         public_button.click()
-        time.sleep(50)
+        time.sleep(40)
         self.driver.implicitly_wait(10)
         # Get the link to the new video
         print('getting link')

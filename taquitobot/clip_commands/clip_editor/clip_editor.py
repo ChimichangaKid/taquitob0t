@@ -29,17 +29,24 @@ from clip_commands.clip_downloader.clip_downloader import download_outplayed_cli
 #
 # =============================================================================
 
+FILE_PATH = os.path.abspath(__file__)
+FOLDER_PATH = os.path.dirname(FILE_PATH)
+MODEL_RELATIVE_PATH = 'neural_networks/taquitobot_clip_editor_crop2_NN.h5'
+MODEL_PATH = os.path.join(FOLDER_PATH, MODEL_RELATIVE_PATH)
+
 CROP_RIGHT = 1060
 CROP_LEFT = 850
 CROP_TOP = 775
 CROP_BOTTOM = 970
 
-SONG_FOLDER_PATH = 'taquitobot/clip_commands/clip_editor/music/'
+SONG_FOLDER_RELATIVE_PATH = 'music/'
+SONG_FOLDER_PATH = os.path.join(FOLDER_PATH, SONG_FOLDER_RELATIVE_PATH)
+
 MP4_CODEC = "libx264"
-CLIP_EDITOR_MODEL = load_model(
-    'taquitobot/clip_commands/clip_editor/neural_networks/taquitobot_clip_editor_crop2_NN.h5',
-    compile=False)
-JSON_FILE_PATH = 'taquitobot/clip_commands/clip_editor/clip_data.json'
+CLIP_EDITOR_MODEL = load_model(MODEL_PATH, compile=False)
+
+JSON_FILE_RELATIVE_PATH = 'clip_data.json'
+JSON_FILE_PATH = os.path.join(FOLDER_PATH, JSON_FILE_RELATIVE_PATH)
 
 # =============================================================================
 #
@@ -55,7 +62,7 @@ class ClipEditor:
         Creates a clip editor to assist in editing the video, takes a discord message as argument.
         :param: discord_message: The discord message as a string containing the outplayed.tv clip link.
         """
-        self.video_file, self.video_title = download_outplayed_clip_from_discord_message(
+        self.video_file, self.video_title, self.game_title = download_outplayed_clip_from_discord_message(
             discord_message)
 
         self.audio_track, self.audio_drop = get_random_audio_from_folder(
@@ -117,7 +124,7 @@ class ClipEditor:
         :return: The video title and the path to the video.
         """
         try:
-            self.new_filename = self.video_title + ' valorant.mp4'
+            self.new_filename = self.video_title + ' ' + self.game_title + '.mp4'
             self.edited_video.write_videofile(self.new_filename,
                                               fps=30,
                                               codec=MP4_CODEC,
@@ -198,6 +205,7 @@ def get_random_audio_from_folder(path):
 
     # Get a unique song that was not used in the most recent edit
     song_path = random.choice(os.listdir(path))
+    print(song_path)
     song_start_time = float(
         re.search(r'(\d+\$\d+)', song_path).group(1).replace('$', '.'))
 

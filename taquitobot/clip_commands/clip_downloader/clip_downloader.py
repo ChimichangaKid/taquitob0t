@@ -57,6 +57,7 @@ def extract_video_link(url):
     Helper function to convert the outplayed link to the raw .mp4 link.
     :param: url: The url of the outplayed clip that was posted in the discord
     :return: mp4_link: The string link to the mp4 file to be downloaded
+    :return: game_title: The string that is the title of the game that is being played.
     """
     url_string = requests.get(url)
     html = url_string.text
@@ -64,8 +65,12 @@ def extract_video_link(url):
     soup = BeautifulSoup(html, 'html.parser')
     video_tag = soup.find('video')
     mp4_link = video_tag['src']
-    
-    return mp4_link
+
+    title_tag = soup.find('title')
+    outplayed_tag = title_tag.get_text().split('|')
+    game_title = outplayed_tag[0].split('#')[1].replace(' ', '')
+    print(game_title)
+    return mp4_link, game_title
 
 def download_outplayed_clip_from_discord_message(discord_message):
     """
@@ -81,9 +86,10 @@ def download_outplayed_clip_from_discord_message(discord_message):
     except:
         print("Error has occurred in finding link")
     
-    video_file = download_video(extract_video_link(outplayed_url))
+    mp4_link, game_title = extract_video_link(outplayed_url)
+    video_file = download_video(mp4_link)
     
     # Get vido title from rest of message
     video_title = re.sub(OUTPLAYED_PATTERN, "", discord_message, re.IGNORECASE).replace('\n', '')
 
-    return video_file, video_title
+    return video_file, video_title, game_title
