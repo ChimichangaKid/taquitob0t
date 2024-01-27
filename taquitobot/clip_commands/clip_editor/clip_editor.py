@@ -106,10 +106,13 @@ class ClipEditor:
         audio_subclip = self.audio_clip.subclip(
             audio_start, int(self.length_of_clip + audio_start))
 
-        self.edited_video = self.video_clip.set_audio(audio_subclip)\
+        if self.game_title != "LethalCompany":
+            self.edited_video = self.video_clip.set_audio(audio_subclip)
+        else:
+            self.edited_video = self.video_clip
         
         # Convert the video to 16:9 aspect ratio (vertical)
-        self.edited_video = self.edited_video.resize(height=960)
+        self.edited_video = self.edited_video.resize(height=960, width=540)
         centre = int(self.edited_video.w / 2)
         self.edited_video = self.edited_video.crop(x1=centre - 270, y1=0, x2=centre + 270, y2=960)
         
@@ -124,7 +127,7 @@ class ClipEditor:
         :return: The video title and the path to the video.
         """
         try:
-            self.new_filename = self.video_title + ' ' + self.game_title + '.mp4'
+            self.new_filename = self.video_title + ' ' + self.game_title + ' shorts.mp4'
             self.edited_video.write_videofile(self.new_filename,
                                               fps=30,
                                               codec=MP4_CODEC,

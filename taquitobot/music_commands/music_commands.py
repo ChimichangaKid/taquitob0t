@@ -122,9 +122,14 @@ class MusicPlayer(commands.Cog):
                     "Must be in a voice channel to use this command.")
                 raise JoinException("Not in voice channel")
         else:
-            channel = ctx.message.author.voice.channel
-            self.voice = ctx.voice_client
-            await ctx.voice_client.move_to(channel)
+            try:
+                channel = ctx.message.author.voice.channel
+                self.voice = ctx.voice_client
+                await ctx.voice_client.move_to(channel)
+            except:
+                if ctx.author.voice:
+                    channel = ctx.message.author.voice.channel
+                    self.voice = await channel.connect()
 
     # =============================================================================
     #
@@ -171,7 +176,7 @@ class MusicPlayer(commands.Cog):
         if ctx.voice_client:
             self.title_list.clear()
             self.song_queue.clear()
-            await ctx.send(f"Disconnected from {ctx.voice_client}.")
+            await ctx.send(f"Disconnected from {ctx.voice_client.channel.name}.")
             await ctx.guild.voice_client.disconnect()
         else:
             await ctx.send("Not in a voice channel...")
