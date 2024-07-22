@@ -1,53 +1,44 @@
-# =============================================================================
-#
-# Title: main.py
-#
-# Author: Aidan
-#
-# Description: Script to interface with bot commands, uses the discord.py package.
-#              API reference for the discord.py can be found at
-#              https://discordpy.readthedocs.io/en/stable/ext/commands/api.html
-#
-# =============================================================================
+"""
+main.py
 
-# =============================================================================
-#
-#                                     Imports
-#
-# =============================================================================
+Control script for interfacing with bot commands using discord.py package. 
+
+Attributes:
+    intents (discord.Intents): Discord intents object that sets permissions for the bot.
+    bot (discord.ext.commands.Bot): Discord bot object to attach commands.
+    outplayed_pattern (str): Regex string containing the outplayed.tv link for automatic video uploading.
+
+TODO:
+    - Write tests
+    - Modularize code
+
+Versioning
+    Author: Aidan (Chimichanga Kid)
+    Date: 2024-07-21
+    Version 1.2.2
+
+Notes:
+    Documentation reference can be found at https://discordpy.readthedocs.io/en/stable/.
+    Code documentation follows Google Python Style Guide when possible. See https://google.github.io/styleguide/pyguide.html for details.
+"""
 import os
 import asyncio
 import re
 import nest_asyncio
 import discord
-import my_flask
 from discord.ext import commands
 from clip_commands.clip_editor.clip_editor import ClipEditor
 
-# =============================================================================
-#
-#                               Constant Declaration
-#
-# =============================================================================
 nest_asyncio.apply()
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix='$', intents=intents)
 outplayed_pattern = r"https://outplayed\.tv/media/.*"
 
 
-# bot.add_cog(RiotCommands(bot))
-
-# =============================================================================
-#
-#                                   Events
-#
-# =============================================================================
-
-
 @bot.event
 async def on_ready():
     """
-    Defines behavior when the bot is initialized.
+    Event to inform the user when the bot has logged in and is ready to receive commands.
     """
     print('We have logged in as {0.user}'.format(bot))
 
@@ -55,8 +46,10 @@ async def on_ready():
 @bot.event
 async def on_message(message):
     """
-    Defines behavior when a message is sent to a discord channel
-    :param message: The contents of the message sent, as a String.
+    Behavior for when a message is received in a discord server. 
+    
+    Args:
+        message (discord.Message): The message that was sent in the discord channel as a discord.Message object.
     """
     await bot.process_commands(message)
     if message.author == bot.user:
@@ -71,22 +64,18 @@ async def on_message(message):
         print(clip_editor.video_title)
 
 
-# =============================================================================
-#
-#                                   Logistics
-#
-# =============================================================================
-
 async def load():
     """
-    Loads the cogs before starting the bot
-    Source: https://www.youtube.com/watch?v=hxsGrMijgUA
+    Functions to load the cogs that are used for commands.
     """
     await bot.load_extension("music_commands.music_commands")
     await bot.load_extension("riot.riot_requests")
 
 
 async def main():
+    """
+    Main function to start the bot and initialize the control loop.
+    """
     async with bot:
         await load()
         try:
@@ -95,8 +84,5 @@ async def main():
             os.system("kill 1")
 
 
-# Allows the bot to be pinged by uptime robot
-# Source: https://www.youtube.com/watch?v=-5ptk-Klfcw
-my_flask.keep_alive()
 if __name__ == '__main__':
     asyncio.run(main())
