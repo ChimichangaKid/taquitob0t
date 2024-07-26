@@ -1,15 +1,15 @@
 """
 music_commands.py
 
-File that handles commands related to requesting music to be played over the bot. Has 
-class definitions for the cog and interfaces with yt_dlp.
+File that handles commands related to requesting music to be played over the 
+bot. Has class definitions for the cog and interfaces with yt_dlp.
 
 Attributes:
     FFMPEG_OPTIONS (dict): Dictionary of options for FFMPEG audio processing.
 
 TODO:
-    - Modularize the code, try and integrate youtube methods and exceptions better so
-    the code is more organized and less spread out.
+    - Modularize the code, try and integrate youtube methods and exceptions 
+    better so the code is more organized and less spread out.
 
 Versioning:
     Author: Aidan (Chimichanga Kid)
@@ -17,7 +17,8 @@ Versioning:
     Version: 1.2.2
 
 Notes:
-    Private methods and variables are documented to assist developers that need to understand the underlying code. 
+    Private methods and variables are documented to assist developers that need
+    to understand the underlying code. 
 """
 import discord
 from discord.ext import commands
@@ -34,7 +35,8 @@ FFMPEG_OPTIONS = {
 
 class MusicPlayer(commands.Cog):
     """
-    Class to handle information about the music playing on the bot and getting music from YouTube.
+    Class to handle information about the music playing on the bot and getting
+    music from YouTube.
 
     Args:
         bot (discord.ext.bot): The bot object to connect the commands to.
@@ -48,9 +50,12 @@ class MusicPlayer(commands.Cog):
         _bot (discord.ext.bot): Bot object to connect the commands to.
         _is_playing (bool): Boolean if the bot is currently playing music.
         _title_list (array): Array of strings representing the titles FIFO.
-        _song_queue (array): Array of links to the song on YouTube matching with _title_list FIFO.
-        _current_song (str): String that is the song title of the song currently playing on the bot.
-        _voice (discord.VoiceClient): VoiceClient object that contains information about the voice channel that is requesting songs.
+        _song_queue (array): Array of links to the song on YouTube matching 
+            with _title_list FIFO.
+        _current_song (str): String that is the song title of the song 
+            currently playing on the bot.
+        _voice (discord.VoiceClient): VoiceClient object that contains 
+            information about the voice channel that is requesting songs.
     """
     def __init__(self, bot):
         self._bot = bot
@@ -65,21 +70,24 @@ class MusicPlayer(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         """
-        Method to inform the user when the music command cogs have been properly loaded.
+        Method to inform the user when the music command cogs have been 
+        properly loaded.
         """
         print("music_commands ready")
 
     @commands.command(name="play", aliases=['p', 'P'])
     async def play(self, ctx):
         """
-        Command that plays the requested video audio in a Discord call, if already playing a song add the requested song to a FIFO
-        queue.
+        Command that plays the requested video audio in a Discord call, 
+        if already playing a song add the requested song to a FIFO queue.
         
         Args:
-            ctx (discord.ext.commands.Context): Discord Context object containing information about the command request.
+            ctx (discord.ext.commands.Context): Discord Context object 
+                containing information about the command request.
         
         Raises:
-            JoinException (Exception): If the bot is unable to join the channel successfully.
+            JoinException (Exception): If the bot is unable to join the channel
+                successfully.
         """
 
         song_name = ctx.message.content.split(None, 1)[1]
@@ -105,16 +113,17 @@ class MusicPlayer(commands.Cog):
     @commands.command(name="leave", aliases=["disconnect", 'l', 'L'])
     async def leave(self, ctx):
         """
-        Command to instruct the bot to disconnect from the voice channel. If not in a voice channel this command does
-        nothing.
+        Command to instruct the bot to disconnect from the voice channel. If 
+        not in a voice channel this command does nothing.
         
         Args:
-            ctx (discord.ext.commands.Context): Discord Context object containing information about the command request.
+            ctx (discord.ext.commands.Context): Discord Context object 
+                containing information about the command request.
         """
         if ctx.voice_client:
             self._title_list.clear()
             self._song_queue.clear()
-            await ctx.send(f"Disconnected from {ctx.voice_client.channel.name}.")
+            await ctx.send(f"Disconnected {ctx.voice_client.channel.name}.")
             await ctx.guild.voice_client.disconnect()
         else:
             await ctx.send("Not in a voice channel...")
@@ -122,11 +131,12 @@ class MusicPlayer(commands.Cog):
     @commands.command(name="pause")
     async def pause(self, ctx):
         """
-        Command to pause the current song that is being played. If the current track is already paused then it will
-        unpause the track.
+        Command to pause the current song that is being played. If the current 
+        track is already paused then it will unpause the track.
 
         Args:
-            ctx (discord.ext.commands.Context): Discord Context object containing information about the command request.
+            ctx (discord.ext.commands.Context): Discord Context object 
+                containing information about the command request.
         
         Raises:
             SongException (Exception): if the track is not playing or paused.
@@ -145,10 +155,12 @@ class MusicPlayer(commands.Cog):
     @commands.command(name="skip", aliases=['s', 'S'])
     async def skip(self, ctx):
         """
-        Command to skip the currently playing song and proceed to the next song in the queue.
+        Command to skip the currently playing song and proceed to the next song 
+            in the queue.
         
         Args:
-            ctx (discord.ext.commands.Context): Discord Context object containing information about the command request.
+            ctx (discord.ext.commands.Context): Discord Context object 
+                containing information about the command request.
         """
 
         if self._voice._is_playing() or self._voice.is_paused():
@@ -158,10 +170,12 @@ class MusicPlayer(commands.Cog):
     @commands.command(name="queue", aliases=['q', 'Q'])
     async def queue(self, ctx):
         """
-        Command to show the current songs in the queue. Displays the queue as a discord message.
+        Command to show the current songs in the queue. Displays the queue as a
+            discord message.
 
         Args:
-            ctx (discord.ext.commands.Context): Discord Context object containing information about the command request.
+            ctx (discord.ext.commands.Context): Discord Context object 
+                containing information about the command request.
         """
 
         if len(self._title_list) < 1:
@@ -178,10 +192,13 @@ class MusicPlayer(commands.Cog):
     @commands.command(name="remove", aliases=['r', 'R'])
     async def remove(self, ctx):
         """
-        Command to remove the specified song from the queue. The message should be formated containing the index of the song in the queue starting at 1.
+        Command to remove the specified song from the queue. The message should
+            be formatted containing the index of the song in the queue starting 
+            at 1.
 
         Args:
-            ctx (discord.ext.commands.Context): Discord Context object containing information about the command request.
+            ctx (discord.ext.commands.Context): Discord Context object 
+                containing information about the command request.
         """
         index = ctx.message.content
         song_index = int(index.split(None, 1)[1]) - 1
@@ -197,7 +214,8 @@ class MusicPlayer(commands.Cog):
         Private helper function to play the next song in queue if it exists
 
         Args:
-            ctx (discord.ext.commands.Context): Discord Context object containing information about the command request.
+            ctx (discord.ext.commands.Context): Discord Context object 
+                containing information about the command request.
         """
         if len(self._song_queue) > 0:
             self._is_playing = True
@@ -228,7 +246,8 @@ class MusicPlayer(commands.Cog):
             (str): The title of the song as a string.
         
         Raises:
-            SongException (Exception): If the song was unable to be fetched from YouTube.
+            SongException (Exception): If the song was unable to be fetched 
+                from YouTube.
         """
         song_information = await fetch_song(song_name)
         if song_information:
@@ -240,10 +259,12 @@ class MusicPlayer(commands.Cog):
 
     async def _join_voice(self, ctx):
         """
-        Helper function to join the voice channel of the user that requested the command.
+        Helper function to join the voice channel of the user that requested 
+        the command.
 
         Args:
-            ctx (discord.ext.commands.Context): Discord Context object containing information about the command request.
+            ctx (discord.ext.commands.Context): Discord Context object 
+                containing information about the command request.
         """
         if self._voice is None:
             if ctx.author.voice:
