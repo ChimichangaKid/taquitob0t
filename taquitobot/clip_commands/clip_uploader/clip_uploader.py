@@ -100,7 +100,7 @@ Mr Beast Tyler1 InnoTurtle Laplace's Demon No Hud Crown Royale {game_title} Worl
         print('adding title')
         textbox_element = self.driver.find_element(By.XPATH, '//div[@id="textbox" and contains(@class, "ytcp-social-suggestions-textbox")]')
         textbox_element.clear()
-        textbox_element.send_keys(self.video_title)
+        textbox_element.send_keys(self.video_title) 
 
         self.driver.implicitly_wait(4)
 

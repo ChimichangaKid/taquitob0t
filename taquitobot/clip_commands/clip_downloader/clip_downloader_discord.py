@@ -44,11 +44,13 @@ class ClipDownloaderDiscord(ClipDownloaderWebLinkAbstract):
             the discord message.
         _game_title (str): The title of the game that is associated with the
             posted url as a string.
+        _web_link (str): The link to the video on the web.
     """
     def __init__(self, discord_message: str) -> None:
         self._video_title = re.sub(OUTPLAYED_PATTERN, "", discord_message, 
                                   re.IGNORECASE).replace('\n', '')
         self._game_title = ""
+        self._web_link = ""
         self._modify_web_link(discord_message)
     
     def get_game_title(self) -> str:
@@ -78,7 +80,7 @@ class ClipDownloaderDiscord(ClipDownloaderWebLinkAbstract):
             discord_message (str): The discord message that was sent to
             provoke this process.
         """
-        video_url = re.search(discord_message)
+        video_url = re.search(OUTPLAYED_PATTERN, discord_message).group()
         url_string = requests.get(video_url)
         html = url_string.text
         soup = BeautifulSoup(html, "html.parser")

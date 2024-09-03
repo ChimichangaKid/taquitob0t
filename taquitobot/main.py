@@ -27,7 +27,19 @@ import re
 import nest_asyncio
 import discord
 from discord.ext import commands
-from clip_commands.clip_editor.clip_editor import ClipEditor
+from clip_commands.clip_downloader.clip_downloader_discord import (
+    ClipDownloaderDiscord
+)
+from clip_commands.clip_editor.clip_prep import (
+    ClipPrepValorant,
+)
+from clip_commands.clip_editor.clip_editor_updated import (
+    ClipEditor
+)
+from clip_commands.clip_uploader.clip_uploader_updated import (
+    YouTubeUploader
+)
+# from clip_commands.clip_editor.clip_editor import ClipEditor
 
 nest_asyncio.apply()
 intents = discord.Intents.all()
@@ -58,10 +70,28 @@ async def on_message(message):
     content = message.content.lower()
 
     if re.search(outplayed_pattern, content, re.IGNORECASE):
-        clip_editor = ClipEditor(content)
-        await clip_editor.add_audio()
-        clip_editor.save_video()
-        print(clip_editor.video_title)
+        clip_downloader = ClipDownloaderDiscord(discord_message=content)
+        file_name = clip_downloader.download_video()
+        game_title = clip_downloader.get_game_title()
+        video_title = clip_downloader.get_video_title()
+        match game_title:
+            case "valorant":
+                clip_prep = ClipPrepValorant(video_file=file_name)
+            case _:
+                clip_prep = ClipPrepValorant(video_file=file_name)
+
+        clip_editor = ClipEditor(clip_prep=clip_prep)  
+        edited_clip = clip_editor.edit_and_save_video(clip_file=file_name, 
+                                                      game_title=game_title,
+                                                      video_title=video_title)
+        
+        clip_uploader = YouTubeUploader(video_title=video_title,
+                                        game_title=game_title)
+        YouTubeUploader.upload_to_youtube(file_name=edited_clip)
+        # clip_editor = ClipEditor(content)
+        # await clip_editor.add_audio()
+        # clip_editor.save_video()
+        # print(clip_editor.video_title)
 
 
 async def load():

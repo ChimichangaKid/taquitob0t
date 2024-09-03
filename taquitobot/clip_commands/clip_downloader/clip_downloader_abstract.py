@@ -65,6 +65,7 @@ class ClipDownloaderWebLinkAbstract(ABC, VideoDownloader):
         _web_link (str): The link to the web page
     """
     def __init__(self, link="") -> None:
+        self._file_name = ""
         self._web_link = link
         super.__init__()
 
@@ -80,16 +81,27 @@ class ClipDownloaderWebLinkAbstract(ABC, VideoDownloader):
             file_name (str): The name of the file as a string where the video
                 was downloaded to.
         """
-        file_name = os.path.basename(self._web_link)
+        self._file_name = os.path.basename(self._web_link)
 
         r = requests.get(self._web_link)
 
-        with open(file_name, 'w') as f:
+        with open(self._file_name, 'w') as f:
             for chunk in r.iter_content(chunk_size=1024*1024):
                 if chunk:
                     f.write(chunk)
 
-        return file_name
+        return self._file_name
+
+    def get_file_name(self) -> str:
+        """
+        Method to access the file name attribute.
+
+        Args:
+
+        Returns:
+            (str): The path to the file of the clip that is being edited.
+        """
+        return self._file_name
     
     @abstractmethod
     def _modify_web_link(self) -> None:
@@ -118,5 +130,4 @@ class ClipDownloaderWebLinkAbstract(ABC, VideoDownloader):
             (str): The title of the game as a string.
         """
         ...
-    
     
