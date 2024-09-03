@@ -1,20 +1,30 @@
-# =============================================================================
-#
-# Title: main.py
-#
-# Author: Aidan
-#
-# Description: Script to interface with bot commands, uses the discord.py package.
-#              API reference for the discord.py can be found at
-#              https://discordpy.readthedocs.io/en/stable/ext/commands/api.html
-#
-# =============================================================================
+"""
+main.py
 
-# =============================================================================
-#
-#                                     Imports
-#
-# =============================================================================
+Control script for interfacing with bot commands using discord.py package. 
+
+Attributes:
+    intents (discord.Intents): Discord intents object that sets permissions for 
+        the bot.
+    bot (discord.ext.commands.Bot): Discord bot object to attach commands.
+    outplayed_pattern (str): Regex string containing the outplayed.tv link for 
+        automatic video uploading.
+
+TODO:
+    - Write tests
+    - Modularize code
+
+Versioning
+    Author: Aidan (Chimichanga Kid)
+    Date: 2024-07-21
+    Version 1.2.2
+
+Notes:
+    Documentation reference can be found at 
+    https://discordpy.readthedocs.io/en/stable/.
+    Code documentation follows Google Python Style Guide when possible. See 
+    https://google.github.io/styleguide/pyguide.html for details.
+"""
 import asyncio
 import re
 import nest_asyncio
@@ -22,6 +32,7 @@ import discord
 import random
 import discord_tokens
 from discord.ext import commands
+from text_const import find_response
 from clip_commands.clip_downloader.clip_downloader_discord import (
     ClipDownloaderDiscord
 )
@@ -34,49 +45,16 @@ from clip_commands.clip_editor.clip_editor import (
 from clip_commands.clip_uploader.clip_uploader import (
     YouTubeUploader
 )
-
-# =============================================================================
-#
-#                               Constant Declaration
-#
-# =============================================================================
 nest_asyncio.apply()
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix='$', intents=intents)
 outplayed_pattern = r"https://outplayed\.tv/.*"
 
-
-trigger_words = [
-    "idjit", "val", "taquito", "taquitobot", "mald", "gg ", "GG ", "gnome",
-    "michael", "bot", "tft", "boy savior", "savior", "meds", "braindead"
-]
-responses = [
-    "Dog", "Mald", "little aram", "Bruh", "so bad", "where the idjits at",
-    "my name mickle L", "lil tft", "Im the better zenyatta", ":skull:",
-    "Ur a clown", "so braindead", "mald manlet", "i am laplaces demon",
-    "troll", "I hate meatriders", "<:mpog:935384866369974332>", "noob",
-    "keep taking notes buddy :nerd:", "Ur a mutt", "lil pool"
-]
-
-ochre99 = 331906932388659201
-innoturtle = 314169544975319041
-gogochonga = 329473509237587968
-sarin = 144648633285869568
-fishz = 293528843291983872
-el_curry = 319282361978322957
-drewpy = 369279788046614531
-
-# =============================================================================
-#
-#                                   Events
-#
-# =============================================================================
-
-
 @bot.event
 async def on_ready():
     """
-    Defines behavior when the bot is initialized.
+    Event to inform the user when the bot has logged in and is ready to receive
+    commands.
     """
     print('We have logged in as {0.user}'.format(bot))
 
@@ -84,8 +62,11 @@ async def on_ready():
 @bot.event
 async def on_message(message):
     """
-    Defines behavior when a message is sent to a discord channel
-    :param message: The contents of the message sent, as a String.
+    Behavior for when a message is received in a discord server. 
+    
+    Args:
+        message (discord.Message): The message that was sent in the discord 
+            channel as a discord.Message object.
     """
     await bot.process_commands(message)
     if message.author == bot.user:
@@ -121,59 +102,10 @@ async def on_message(message):
             clip_editor.remove_footage(edited_clip)
             clip_editor.remove_footage(file_name)      
 
-    else:
-        content = "".join(content.split()).lower()
-        
-    if any(word in content for word in trigger_words):
-        random.seed()
-        randNum = random.randint(0, 10)
+    to_send = find_response(message=message)
 
-        await message.channel.send(random.choice(responses))
-        if randNum == 5:
-            await message.channel.send("RAAAAAAAAAAAAAHHHH")
-        if message.author.id == drewpy and randNum == 4:
-            await message.channel.send("oh yeah lil bro?")
-        if randNum == 3:
-            await message.channel.send("I hate " +
-                                       message.content.split(" ")[0])
-        if randNum == 6:
-            await message.channel.send("You're so mad")
-            await message.channel.send("Stay mad")
-
-    if "drew" in content:
-        await message.channel.send("drew :peacock:")
-
-    if "deez" in content:
-        await message.channel.send(":face_with_raised_eyebrow:")
-
-    if "leaf" in content:
-        await message.channel.send(
-            "https://tenor.com/view/toronto-maple-leafs-leafs-fans-first-round-exit-gif-25190957"
-        )
-
-    if "roster" in content:
-        if message.author.id == innoturtle or message.author.id == fishz:
-            await message.channel.send("Dogshit roster")
-        if message.author.id == gogochonga:
-            await message.channel.send("not fatribbit")
-        if message.author.id == ochre99:
-            await message.channel.send("God tier roster")
-        if message.author.id == sarin:
-            await message.channel.send("David please carry")
-        if message.author.id == drewpy:
-            await message.channel.send("ur literally silver")
-        if message.author.id == el_curry:
-            await message.channel.send("ur literally so bad")
-            await message.channel.send("I mean, *nice try*")
-
-    if "rope" in content:
-        await message.channel.send("https://outplayed.tv/media/VnGLyd")
-    
-    if re.search(r'lil(?:ttle)?bro(?:ther)?|lilbr0', content):
-        await message.channel.send("https://outplayed.tv/media/VnGLyd")
-    
-    if "littleb" in content:
-        await message.channel.send("https://outplayed.tv/media/VnGLyd")
+    for message_to_send in to_send:
+        await message.channel.send(message_to_send)
         
 
 # =============================================================================
@@ -195,11 +127,5 @@ async def main():
     await load()
     await bot.run(discord_tokens.TAQUITOBOT_TOKEN)
 
-            
-
-
-# # Allows the bot to be pinged by uptime robot
-# # Source: https://www.youtube.com/watch?v=-5ptk-Klfcw
-# my_flask.keep_alive()
 if __name__ == '__main__':
     asyncio.run(main())
