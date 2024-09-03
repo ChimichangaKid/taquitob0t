@@ -1,0 +1,1 @@
+Add music to this folder by putting a song and timestamping the beatdrop. An example is given, 3$56_mysong.mp3 would mean the beat drop is at 3.56 seconds.

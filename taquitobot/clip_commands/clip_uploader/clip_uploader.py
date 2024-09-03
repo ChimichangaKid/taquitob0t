@@ -1,167 +1,149 @@
-# =============================================================================
-#
-# Title: clip_uploader.py
-#
-# Author: Aidan
-#
-# Description: Script to upload videos to youtube under The Garchive account.
-#
-# =============================================================================
+"""
+clip_uploader.py
 
-# =============================================================================
-#
-#                                     Imports
-#
-# =============================================================================
+Class implementation to handle uploading clips to YouTube that have been
+edited by the clip_editor.
+
+Attributes:
+
+TODO:
+
+Versioning:
+    Author: Aidan (Chimichanga Kid)
+    Date: 2024-08-23
+    Version: 1.0.0
+
+Notes:
+
+"""
+
 import os
 import time
+from .const import DESCRIPTION_TEMPLATE, COOKIES_FOLDER
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.service import Service as ChromiumService
-from webdriver_manager.chrome import ChromeDriverManager
-from webdriver_manager.core.os_manager import ChromeType
-
-
-# =============================================================================
-#
-#                               Constant Declaration
-#
-# =============================================================================
-current_dir = os.getcwd()
-FILE_PATH = os.path.abspath(__file__)
-FOLDER_PATH = os.path.dirname(FILE_PATH)
-DATA_RELATIVE_PATH = "selenium"
-DATA_PATH = os.path.join(FOLDER_PATH, DATA_RELATIVE_PATH)
+from selenium.webdriver.chrome.service import Service 
 
 chrome_options = Options()
-# chrome_options.add_experimental_option("detach", True) # This will keep the tab open for debugging
-chrome_options.add_argument(f"user-data-dir={DATA_PATH}") 
+chrome_options.add_argument(f"user-data-dir={COOKIES_FOLDER}") 
 chrome_options.add_argument('--no-sandbox')
 chrome_options.add_argument('--disable-dev-shm-usage')
 
-
-
-# =============================================================================
-#
-#                                   Classes
-#
-# =============================================================================
 class YouTubeUploader:
 
-    def __init__(self, video_path, video_title, game_title):
-        self.driver = webdriver.Chrome(service=ChromiumService(ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install()), options=chrome_options)
-        self.video_path = video_path
-        self.game_title = game_title
-        self.video_title = video_title + f' #{game_title} #{game_title}Clip #{game_title}Guides #{game_title}Funny'
-        self.video_title = self.video_title[:100]
-        self.DESCRIPTION_TEMPLATE = f"""
-{game_title} Gameplay {game_title} highlights {game_title} Clips {game_title} Plays {game_title} Montage {game_title} Shorts
-{game_title} Duelist {game_title} Clutches {game_title} Masters {game_title} AI {game_title} Phoenix {game_title} Jett {game_title} Yoru
-{game_title} Lineups {game_title} Fast Plant {game_title} Strategy {game_title} Map {game_title} Agent {game_title} Rework {game_title} Streamer
-{game_title} Goat {game_title} Sentinels {game_title} Duelists {game_title} Speedrun {game_title} Champions {game_title} Best Moments 
-{game_title} High Elo {game_title} Aim {game_title} Vandal Mr Big Meteors DigDaddyDavid {game_title} Cracked {game_title} Funny Moments
-{game_title} jester {game_title} skibidi modded {game_title} {game_title} Jumpscare Tenz xQc Faker Golden Freddy {game_title} new update
-Mr Beast Tyler1 InnoTurtle Laplace's Demon No Hud Crown Royale {game_title} Worlds {game_title} prize {game_title} cheats {game_title} hacks
-{game_title} radiant {game_title} glitches {game_title} patch notes {game_title} replay system {game_title} free new skins {game_title} bobs
-{game_title} pros {game_title} fnaf {game_title} asmr {game_title} lofi beats Valorant Outlaw Valorant New gun Valorant Kuronami Bundle
-"""
-        self.DESCRIPTION_TEMPLATE = self.DESCRIPTION_TEMPLATE[:5000]
+    def __init__(self, video_title: str, game_title: str) -> None:
+        self._driver = webdriver.Chrome(service=Service(), 
+                                        options=chrome_options)
+        self._video_title = video_title + f""" #{game_title} #{game_title}Clip 
+        #{game_title}Guides"""[:100]
+        self._description = DESCRIPTION_TEMPLATE.replace("placeholder", 
+                                                         game_title)[:5000]
 
-    def upload_video_to_YT(self):
+    def upload_to_youtube(self, file_name: str) -> str:
         """
-        Uploads the video to youtube that was provided, should be a #shorts video.
-        :return: A string that is a link to the uploaded video.
-        """
-        self.driver.get('https://www.youtube.com')
+        Uploads the specified video to YouTube by navigating to site and 
+        uploading to the logged in user.
 
-        self.driver.implicitly_wait(7)
+        Args:
+            file_name (str): The path to the video file that should be 
+                uploaded.
+        Returns:
+            (str): The url of the video on YouTube.
+        """
+        self._driver.get("https://www.youtube.com")
+        self._driver.implicitly_wait(5)
+
+        self._go_to_video_manager()
+        self._driver.implicitly_wait(5)
+        self._upload_video_file_helper(os.path.join(os.getcwd(), file_name))
+        self._driver.implicitly_wait(5)
+        self._add_title_and_description()
+        self._driver.implicitly_wait(7)
+        self._make_public()
         
-        # Click first upload button
-        upload_button = self.driver.find_element(By.XPATH, '//yt-icon[contains(@class, "style-scope ytd-topbar-menu-button-renderer")]')
+        print("Getting link")
+        link_element = self._driver.find_element(By.XPATH, """//a[contains(@class, "style-scope ytcp-video-info")]""")
+        video_link = link_element.get_attribute("href")
+        print(f"link is {video_link}")
+
+    
+        time.sleep(2)
+        print("about to click")
+        publish_button = self._driver.find_element(By.XPATH, '//ytcp-button[@id="done-button"]')
+        print("button found")
+        publish_button.click()
+        
+        print("clicking publish video")
+        time.sleep(3)
+
+        self._driver.implicitly_wait(7)
+        self._driver.quit()
+
+        return video_link
+
+    def _go_to_video_manager(self) -> None:
+        """
+        Helper method to navigate to video manager screen on YouTube.
+        """
+        upload_button = self._driver.find_element(By.XPATH, """//yt-icon[contains(@class, "style-scope ytd-topbar-menu-button-renderer")]""")
         upload_button.click()
-        
-        self.driver.implicitly_wait(7)
 
-        # Click second button to get to video manager page
-        upload_button_2 = self.driver.find_element(By.XPATH,'//tp-yt-paper-item[.//yt-formatted-string[contains(text(), "Upload video")]]')
-        upload_button_2.click()
-        
-        self.driver.implicitly_wait(7)
+        self._driver.implicitly_wait(5)
 
-        # Add the file to youtube
-        print('uploading file')
-        file_input = self.driver.find_element(By.XPATH,'//input[@type="file"]')
-        file_path = os.path.join(current_dir, self.video_path)
-        file_input.send_keys(file_path)
+        video_manager_button = self._driver.find_element(By.XPATH, """//tp-yt-paper-item[.//yt-formatted-string[contains(., "Upload video")]]""")
+        video_manager_button.click()
 
-        time.sleep(5)
-        # Add title
-        print('adding title')
-        textbox_element = self.driver.find_element(By.XPATH, '//div[@id="textbox" and contains(@class, "ytcp-social-suggestions-textbox")]')
-        textbox_element.clear()
-        textbox_element.send_keys(self.video_title)
+        return
+    
+    def _upload_video_file_helper(self, video_path: str) -> None:
+        """
+        Helper method to upload the specified video to YouTube.
 
-        self.driver.implicitly_wait(4)
+        Args:
+            video_path (str): The path to the video file.
+        """
+        file_input_box = self._driver.find_element(By.XPATH, 
+                                                   """//input[@type="file"]""")
+        file_input_box.send_keys(video_path)
 
-        # Add description
-        time.sleep(3)
-        description_box = self.driver.find_element(By.XPATH, '//div[@aria-label="Tell viewers about your video (type @ to mention a channel)"]')
-        description_box.clear()
-        description_box.send_keys(self.DESCRIPTION_TEMPLATE)
+    def _add_title_and_description(self) -> None:
+        """
+        Helper method to add the title and description to the video.
+        """
+        title_textbox = self._driver.find_element(By.XPATH, """//div[@id="textbox" and contains(@class, "ytcp-social-suggestions-textbox")]""")
+        title_textbox.clear()
+        time.sleep(0.5)
+        title_textbox.send_keys(self._video_title)
 
-        time.sleep(3)
-        # Click the 'not made for kids button'
-        print('selecting not made for kids')
-        not_made_for_kids_button = self.driver.find_element(By.XPATH, '//tp-yt-paper-radio-button[@name="VIDEO_MADE_FOR_KIDS_NOT_MFK"]')
+        self._driver.implicitly_wait(3)
+
+        description_textbox = self._driver.find_element(By.XPATH, """//div[@aria-label="Tell viewers about your video (type @ to mention a channel)"]""")
+        description_textbox.clear()
+        time.sleep(0.5)
+        description_textbox.send_keys(self._description)
+
+        self._driver.implicitly_wait(3)
+
+        not_made_for_kids_button = self._driver.find_element(By.XPATH, """//tp-yt-paper-radio-button[@name="VIDEO_MADE_FOR_KIDS_NOT_MFK"]""")
         not_made_for_kids_button.click()
 
+        return
+
+    def _make_public(self) -> None:
+        """
+        Helper method to make the video public. 
+        """
+        next_button = self._driver.find_element(By.XPATH, """//ytcp-button[@id="next-button"]""")
+        next_button.click()
+        self._driver.implicitly_wait(2)
+        next_button.click()
+        self._driver.implicitly_wait(2)
+        next_button.click()
+        self._driver.implicitly_wait(2)
         time.sleep(5)
-        self.driver.implicitly_wait(7)
-        # Skip through all the other tabs
-        print('skipping through the other tabs')
-        next_button = self.driver.find_element(By.XPATH, '//ytcp-button[@id="next-button"]')
-        next_button.click()
-        self.driver.implicitly_wait(3)
-        print('skipped tab 1')
-        next_button.click()
-        self.driver.implicitly_wait(3)
-        print('skipped tab 2')
-        next_button.click()
-        print('skipped tab 3')
-        self.driver.implicitly_wait(7)
-        
-        # make video public
-        print('making video public')
-        public_button = self.driver.find_element(By.XPATH, '//tp-yt-paper-radio-button[@name="PUBLIC"]')
+
+        public_button = self._driver.find_element(By.XPATH, """//tp-yt-paper-radio-button[@name="PUBLIC"]""")
         public_button.click()
-        time.sleep(40)
-        self.driver.implicitly_wait(10)
-        # Get the link to the new video
-        print('getting link')
-        link_element = self.driver.find_element(By.XPATH, '//a[contains(@class, "style-scope ytcp-video-info")]')
-        link_url = link_element.get_attribute('href')
-        print(f'Youtube link is: {link_url}')
-        
-
-        self.driver.implicitly_wait(10)
-        # publish the video
-        print('publishing video')
-        publish_button = self.driver.find_element(By.XPATH, '//ytcp-button[@id="done-button"]')
-        publish_button.click()
-
-        time.sleep(3)
-        
-        self.driver.implicitly_wait(7)
-        self.driver.quit()
-
-        return link_url
-    
-
-    def delete_old_video(self):
-        """
-        Function to remove the local instance of the video when done.
-        """
-        if os.path.exists(self.video_path):
-            os.remove(self.video_path)
-            print(f'Deleted {self.video_path}')
+        time.sleep(15)
+        return
