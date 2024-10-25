@@ -96,7 +96,8 @@ class MusicPlayer(commands.Cog):
             await self._join_voice(ctx)
         except JoinException:
             await ctx.send(
-                "Error joining voice channel. Check that you are in a channel before requesting."
+                """Error joining voice channel. Check that you are in a channel
+                before requesting."""
             )
             return None
 

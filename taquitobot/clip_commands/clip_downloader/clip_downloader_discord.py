@@ -25,7 +25,7 @@ import requests
 from bs4 import BeautifulSoup
 from .clip_downloader_abstract import ClipDownloaderWebLinkAbstract
 
-OUTPLAYED_PATTERN = r"https://outplayed\.tv/media/.*"
+OUTPLAYED_PATTERN = r"https://outplayed\.tv/.*"
 
 
 class ClipDownloaderDiscord(ClipDownloaderWebLinkAbstract):
@@ -85,11 +85,17 @@ class ClipDownloaderDiscord(ClipDownloaderWebLinkAbstract):
         html = url_string.text
         soup = BeautifulSoup(html, "html.parser")
 
-        self._get_mp4_link(self, soup=soup)
-        self._get_game_title(self, soup=soup)
+        video_tag = soup.find("video")
+        self._web_link = video_tag["src"]
+        title_tag = soup.find("title")
+        outplayed_tag = title_tag.get_text().split("|")
+        try:
+            self._game_title = outplayed_tag[0].split("#")[1].replace(" ", "")
+        except:
+            self._game_title = "Valorant"
         return 
     
-    def _get_mp4_link(self, soup: str):
+    def _get_mp4_link(self, soup: BeautifulSoup):
         """
         Helper function to get the mp4 link from the BeautifulSoup parsed 
         html.
@@ -101,7 +107,7 @@ class ClipDownloaderDiscord(ClipDownloaderWebLinkAbstract):
         video_tag = soup.find("video")
         self._web_link = video_tag["src"]
         
-    def _get_game_title(self, soup: str):
+    def _get_game_title(self, soup: BeautifulSoup):
         """
         Helper function to get the game title from the BeautifulSoup parsed 
         html.
@@ -112,4 +118,7 @@ class ClipDownloaderDiscord(ClipDownloaderWebLinkAbstract):
         """
         title_tag = soup.find("title")
         outplayed_tag = title_tag.get_text().split("|")
-        self._game_title = outplayed_tag[0].split("#")[1].replace(" ", "")
+        try:
+            self._game_title = outplayed_tag[0].split("#")[1].replace(" ", "")
+        except:
+            self._game_title = "Valorant"

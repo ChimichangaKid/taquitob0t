@@ -85,7 +85,7 @@ class ClipDownloaderWebLinkAbstract(ABC, VideoDownloader):
 
         r = requests.get(self._web_link)
 
-        with open(self._file_name, 'w') as f:
+        with open(self._file_name, 'wb') as f:
             for chunk in r.iter_content(chunk_size=1024*1024):
                 if chunk:
                     f.write(chunk)

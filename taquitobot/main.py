@@ -4,9 +4,11 @@ main.py
 Control script for interfacing with bot commands using discord.py package. 
 
 Attributes:
-    intents (discord.Intents): Discord intents object that sets permissions for the bot.
+    intents (discord.Intents): Discord intents object that sets permissions for 
+        the bot.
     bot (discord.ext.commands.Bot): Discord bot object to attach commands.
-    outplayed_pattern (str): Regex string containing the outplayed.tv link for automatic video uploading.
+    outplayed_pattern (str): Regex string containing the outplayed.tv link for 
+        automatic video uploading.
 
 TODO:
     - Write tests
@@ -18,8 +20,10 @@ Versioning
     Version 1.2.2
 
 Notes:
-    Documentation reference can be found at https://discordpy.readthedocs.io/en/stable/.
-    Code documentation follows Google Python Style Guide when possible. See https://google.github.io/styleguide/pyguide.html for details.
+    Documentation reference can be found at 
+    https://discordpy.readthedocs.io/en/stable/.
+    Code documentation follows Google Python Style Guide when possible. See 
+    https://google.github.io/styleguide/pyguide.html for details.
 """
 import os
 import asyncio
@@ -32,14 +36,15 @@ from clip_commands.clip_downloader.clip_downloader_discord import (
 )
 from clip_commands.clip_editor.clip_prep import (
     ClipPrepValorant,
+    ClipPrepLeagueOfLegends
 )
-from clip_commands.clip_editor.clip_editor_updated import (
+from clip_commands.clip_editor.clip_editor import (
     ClipEditor
 )
-from clip_commands.clip_uploader.clip_uploader_updated import (
+from clip_commands.clip_uploader.clip_uploader import (
     YouTubeUploader
 )
-# from clip_commands.clip_editor.clip_editor import ClipEditor
+
 
 nest_asyncio.apply()
 intents = discord.Intents.all()
@@ -50,7 +55,8 @@ outplayed_pattern = r"https://outplayed\.tv/media/.*"
 @bot.event
 async def on_ready():
     """
-    Event to inform the user when the bot has logged in and is ready to receive commands.
+    Event to inform the user when the bot has logged in and is ready to receive
+    commands.
     """
     print('We have logged in as {0.user}'.format(bot))
 
@@ -61,7 +67,8 @@ async def on_message(message):
     Behavior for when a message is received in a discord server. 
     
     Args:
-        message (discord.Message): The message that was sent in the discord channel as a discord.Message object.
+        message (discord.Message): The message that was sent in the discord 
+            channel as a discord.Message object.
     """
     await bot.process_commands(message)
     if message.author == bot.user:
@@ -77,6 +84,8 @@ async def on_message(message):
         match game_title:
             case "valorant":
                 clip_prep = ClipPrepValorant(video_file=file_name)
+            case "leagueoflegends":
+                clip_prep = ClipPrepLeagueOfLegends(video_file=file_name)
             case _:
                 clip_prep = ClipPrepValorant(video_file=file_name)
 
@@ -87,11 +96,12 @@ async def on_message(message):
         
         clip_uploader = YouTubeUploader(video_title=video_title,
                                         game_title=game_title)
-        YouTubeUploader.upload_to_youtube(file_name=edited_clip)
-        # clip_editor = ClipEditor(content)
-        # await clip_editor.add_audio()
-        # clip_editor.save_video()
-        # print(clip_editor.video_title)
+        try:
+            clip_uploader.upload_to_youtube(file_name=edited_clip)
+        except:
+            print("error uploading video")
+        finally:
+            clip_editor.remove_footage(edited_clip)
 
 
 async def load():
